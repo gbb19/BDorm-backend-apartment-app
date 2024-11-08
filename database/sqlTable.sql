@@ -34,14 +34,16 @@ VALUES
     (@date, @room_number, @username,NULL,NULL);
 
 -- sql-08
-SELECT bill_id, payment_term, create_date_time, bill_status, tenant_username
+SELECT bill_id, payment_term, create_date_time, bill_status
 FROM bill
-WHERE tenant_username = @username;
+WHERE tenant_username = @username
+ORDER BY create_date_time DESC;
 
 -- sql-09
-SELECT bill_id, payment_term, create_date_time, bill_status, tenant_username
+SELECT bill_id, payment_term, create_date_time, bill_status
 FROM bill
-WHERE tenant_username = @username;
+WHERE tenant_username = @username
+ORDER BY create_date_time DESC;
 
 -- sql-10
 SELECT bill_id, bill_item_number, unit, unit_price
@@ -329,18 +331,3 @@ VALUES
     (@bill_id,@bill_item_number,'ค่าไฟ',@unit,@electricity_rate),
     (@bill_id,@bill_item_number,'ค่าห้อง',1,@rental_price),
     (@bill_id,@bill_item_number,'ค่าอินเตอร์เน็ต',1,@internet_service_fee);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

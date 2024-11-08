@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"log"
 	"onez19/datasources"
 	"onez19/entities"
@@ -28,7 +27,6 @@ func Register(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&user); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	fmt.Print(user)
 	// ตรวจสอบให้แน่ใจว่ามีข้อมูลครบถ้วน
 	if user.Username == "" || user.Password == "" || user.FirstName == "" || user.LastName == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "All fields are required"})

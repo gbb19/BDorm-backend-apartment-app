@@ -1,9 +1,9 @@
 -- Insert mockup data for User
 INSERT INTO user (username, password, first_name, last_name)
-VALUES ('tenant1', 'password123', 'Alice', 'Smith'),
-       ('tenant2', 'password123', 'Bob', 'Johnson'),
-       ('employee1', 'password123', 'Charlie', 'Brown'),
-       ('employee2', 'password123', 'Dana', 'White');
+VALUES ('tenant1', '$2a$10$Q44RIGQ295q9Y37f1bc.G.lcV.RBx49MjrvOwWsadRMcYdRuSFaZi', 'Alice', 'Smith'),
+       ('tenant2', '$2a$10$Q44RIGQ295q9Y37f1bc.G.lcV.RBx49MjrvOwWsadRMcYdRuSFaZi', 'Bob', 'Johnson'),
+       ('employee1', '$2a$10$Q44RIGQ295q9Y37f1bc.G.lcV.RBx49MjrvOwWsadRMcYdRuSFaZi', 'Charlie', 'Brown'),
+       ('employee2', '$2a$10$Q44RIGQ295q9Y37f1bc.G.lcV.RBx49MjrvOwWsadRMcYdRuSFaZi', 'Dana', 'White');
 
 -- Insert mockup data for Tenant
 INSERT INTO tenant (username)
