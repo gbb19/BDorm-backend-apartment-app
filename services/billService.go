@@ -50,3 +50,50 @@ func GetBillItemsByBillID(c *fiber.Ctx) error {
 		"bill_items": billItems, // จะเป็น [] ถ้าไม่มีข้อมูล
 	})
 }
+
+// ฟังก์ชันเพื่อดึงข้อมูล transaction ตาม bill_id
+func GetTransactionsByBillID(c *fiber.Ctx) error {
+	// รับค่า bill_id จาก path parameter และแปลงเป็น integer
+	billID, err := strconv.Atoi(c.Params("bill_id"))
+	if err != nil {
+		log.Println("Invalid bill_id:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid bill ID"})
+	}
+
+	// ดึงข้อมูล transaction จากฐานข้อมูล
+	transactions, err := datasources.GetTransactionsByBillID(billID)
+	if err != nil {
+		log.Println("Error fetching transactions:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch transactions"})
+	}
+
+	// กรณีไม่มีข้อมูล transaction ให้ส่ง response แบบ 200 OK และ array ว่าง
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"transactions": transactions, // จะเป็น [] ถ้าไม่มีข้อมูล
+	})
+}
+
+func CreateTransaction(c *fiber.Ctx) error {
+	// รับค่า bill_id จาก body ของ request
+	var request struct {
+		BillID int `json:"bill_id"`
+	}
+
+	// อ่านข้อมูลจาก request body
+	if err := c.BodyParser(&request); err != nil {
+		log.Println("Error parsing request body:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	// เรียก datasource เพื่อสร้าง transaction ใหม่
+	transactionID, err := datasources.InsertTransaction(request.BillID)
+	if err != nil {
+		log.Println("Error creating transaction:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create transaction"})
+	}
+
+	// คืนค่า transaction_id ที่ถูกสร้างไปยัง client
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"transaction_id": transactionID,
+	})
+}

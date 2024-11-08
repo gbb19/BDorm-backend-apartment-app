@@ -13,3 +13,7 @@ VALUES (1, 0, 'tenant1', 'employee1');
 INSERT INTO bill_item (bill_id, bill_item_number, bill_item_name, unit, unit_price)
 VALUES (3, 1, 'b1', 100, 1.5),
        (3, 2, 'b2', 50, 2.0);
+
+
+INSERT INTO transaction( bill_id)
+VALUES (@bill_id)

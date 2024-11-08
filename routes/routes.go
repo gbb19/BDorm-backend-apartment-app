@@ -17,5 +17,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/contracts/:contract_number/:contract_year", services.GetContractDetails)
 	app.Get("/bills/:tenant_username", services.GetBillsByTenantUsername)
 	app.Get("/bills/:bill_id/items", services.GetBillItemsByBillID)
+	app.Get("/transactions/:bill_id", services.GetTransactionsByBillID)
+	app.Post("/transactions", services.CreateTransaction)
 
 }
