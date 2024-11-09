@@ -76,3 +76,17 @@ func InsertTransaction(billID int) (int, error) {
 	// คืนค่า transaction_id ที่ถูกสร้างขึ้น
 	return int(transactionID), nil
 }
+
+func UpdateTransactionStatus(transactionID int, status int) error {
+	// สร้างคำสั่ง SQL สำหรับอัปเดตสถานะของ transaction
+	query := `UPDATE transaction SET transaction_status = ? WHERE transaction_id = ?`
+
+	// เตรียม statement และ execute กับฐานข้อมูล
+	_, err := config.DB.Exec(query, status, transactionID)
+	if err != nil {
+		log.Println("Error updating transaction status:", err)
+		return err
+	}
+
+	return nil
+}

@@ -48,24 +48,37 @@ func GetReservationsByUsername(c *fiber.Ctx) error {
 		"reservations": reservations, // ถ้าไม่มีข้อมูลจะเป็น [] เลย
 	})
 }
+
 func UpdateReservationStatus(c *fiber.Ctx) error {
 	// รับข้อมูลจาก request body
 	var request entities.UpdateReservationStatus
 
-	// อ่านข้อมูลจาก request body
+	// แปลงข้อมูลจาก request body เป็น struct
 	if err := c.BodyParser(&request); err != nil {
 		log.Println("Error parsing request body:", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	// เรียก datasource เพื่ออัปเดตสถานะของการจอง
+	// ตรวจสอบค่าที่ได้หลังจากแปลง JSON
+	log.Printf("Parsed request - ReservationID: %d, ReservationStatus: %d", request.ReservationID, request.ReservationStatus)
+
+	// ตรวจสอบว่าฟิลด์ ReservationID ไม่เป็นค่า default (เช่น 0)
+	if request.ReservationID == 0 {
+		log.Println("Missing reservationID in request body")
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing reservationID in request body"})
+	}
+
+	// เรียกใช้ datasource เพื่ออัปเดตสถานะของการจอง
 	err := datasources.UpdateReservationStatus(request.ReservationID, request.ReservationStatus)
 	if err != nil {
 		log.Println("Error updating reservation status:", err)
+		if err.Error() == "No rows updated" {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Reservation not found"})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update reservation status"})
 	}
 
-	// คืนค่าข้อความตอบกลับเมื่ออัปเดตสำเร็จ
+	// ส่งข้อความตอบกลับเมื่ออัปเดตสำเร็จ
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Reservation status updated successfully"})
 }
 
@@ -112,4 +125,28 @@ func GetReservationByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"reservation": reservation,
 	})
+}
+
+func UpdateReservationDetails(c *fiber.Ctx) error {
+	// รับข้อมูลจาก request body
+	var request entities.UpdateReservationDetails
+
+	// แปลงข้อมูลจาก request body เป็น struct
+	if err := c.BodyParser(&request); err != nil {
+		log.Println("Error parsing request body:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	log.Printf("Request received with reservationID: %d, billID: %d, managerUsername: %s", 
+		request.ReservationID, request.BillID, request.ManagerUsername)
+
+	// เรียกใช้ datasource เพื่ออัปเดตข้อมูลในฐานข้อมูล
+	err := datasources.UpdateReservationDetails(request.ReservationID, request.BillID, request.ManagerUsername)
+	if err != nil {
+		log.Println("Error updating reservation details:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update reservation details"})
+	}
+
+	// ส่งข้อความตอบกลับเมื่ออัปเดตสำเร็จ
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Reservation details updated successfully"})
 }

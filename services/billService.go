@@ -3,6 +3,7 @@ package services
 import (
 	"log"
 	"onez19/datasources"
+	"onez19/entities"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -138,10 +139,19 @@ func UpdateTransactionStatus(c *fiber.Ctx) error {
 
 func UpdateBillStatus(c *fiber.Ctx) error {
 	// รับ bill_id และ status จาก path parameter
-	billID := c.Params("bill_id")
+	billIDStr := c.Params("bill_id")
 	status := c.Params("status")
 
-	// ตรวจสอบ status ว่ามีค่าเป็น 1 (Paid) หรือ 2 (Verified) เท่านั้น
+	// แปลง billID จาก string เป็น int
+	billID, err := strconv.Atoi(billIDStr)
+	if err != nil {
+		log.Println("Invalid bill_id:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid bill_id. Must be an integer",
+		})
+	}
+
+	// ตรวจสอบค่า status ว่าต้องเป็น 1 (Paid) หรือ 2 (Verified) เท่านั้น
 	if status != "1" && status != "2" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid status. Allowed values are 1 (Paid) or 2 (Verified)",
@@ -149,14 +159,90 @@ func UpdateBillStatus(c *fiber.Ctx) error {
 	}
 
 	// เรียกฟังก์ชันใน datasource เพื่ออัปเดตสถานะของใบแจ้งหนี้
-	err := datasources.UpdateBillStatus(billID, status)
+	err = datasources.UpdateBillStatus(billID, status)
 	if err != nil {
 		log.Println("Error updating bill status:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update bill status"})
 	}
 
+	// ค้นหา reservation ที่เชื่อมโยงกับ bill_id นี้
+	reservationID, err := datasources.GetReservationByBillID(billID)
+	if err != nil {
+		log.Println("Error retrieving reservation ID:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to retrieve reservation"})
+	}
+
+	// หากไม่มี reservation ที่ตรงกับ bill_id ก็ไม่ต้องทำการอัปเดต reservation status
+	if reservationID == 0 {
+		return c.JSON(fiber.Map{
+			"message": "Bill status updated successfully. No associated reservation found.",
+		})
+	}
+
+	// ตรวจสอบค่า status ของ bill เพื่ออัปเดต status ของ reservation
+	var newReservationStatus int
+	if status == "1" {
+		newReservationStatus = 3 // ถ้า bill_status เป็น 1 ให้อัปเดต reservation_status เป็น 3
+	} else if status == "2" {
+		newReservationStatus = 4 // ถ้า bill_status เป็น 2 ให้อัปเดต reservation_status เป็น 4
+	}
+
+	// อัปเดต reservation status
+	err = datasources.UpdateReservationStatus(reservationID, newReservationStatus)
+	if err != nil {
+		log.Println("Error updating reservation status:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update reservation status"})
+	}
+
 	// ส่งการตอบกลับว่าอัปเดตสำเร็จ
 	return c.JSON(fiber.Map{
-		"message": "Bill status updated successfully",
+		"message": "Bill and reservation statuses updated successfully",
+	})
+}
+
+
+func CreateBill(c *fiber.Ctx) error {
+	// รับข้อมูลจาก request body
+	var request entities.BillCreate
+
+	// อ่านข้อมูลจาก request body
+	if err := c.BodyParser(&request); err != nil {
+		log.Println("Error parsing request body:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	// เรียก datasource เพื่อแทรกข้อมูลในตาราง bill
+	billID, err := datasources.CreateBill(request)
+	if err != nil {
+		log.Println("Error creating bill:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create bill"})
+	}
+
+	// คืนค่า billID ที่ถูกสร้างไปยัง client
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"bill_id": billID,
+	})
+}
+
+func CreateBillItem(c *fiber.Ctx) error {
+	// รับข้อมูลจาก request body
+	var request entities.BillItem
+
+	// อ่านข้อมูลจาก request body
+	if err := c.BodyParser(&request); err != nil {
+		log.Println("Error parsing request body:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	// เรียก datasource เพื่อแทรกข้อมูลในตาราง bill_item
+	err := datasources.CreateBillItem(request)
+	if err != nil {
+		log.Println("Error creating bill item:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create bill item"})
+	}
+
+	// คืนค่าคำตอบที่ถูกต้องไปยัง client
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Bill item created successfully",
 	})
 }

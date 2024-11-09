@@ -38,3 +38,19 @@ func GetBillItemsByBillID(billID int) ([]entities.BillItem, error) {
 	// คืนค่า array ว่างแทนที่จะเป็นข้อผิดพลาดหากไม่พบข้อมูล
 	return billItems, nil
 }
+
+func CreateBillItem(billItem entities.BillItem) error {
+	// คำสั่ง SQL สำหรับการแทรกข้อมูลในตาราง bill_item
+	query := `INSERT INTO bill_item (bill_id, bill_item_number, bill_item_name, unit, unit_price)
+	          VALUES (?, ?, ?, ?, ?)`
+
+	// Execute คำสั่ง SQL
+	_, err := config.DB.Exec(query, billItem.BillID, billItem.BillItemNumber, billItem.BillItemName, billItem.Unit, billItem.UnitPrice)
+	if err != nil {
+		log.Println("Error inserting into bill_item:", err)
+		return err
+	}
+
+	// ไม่มีข้อผิดพลาดแสดงว่าการแทรกสำเร็จ
+	return nil
+}

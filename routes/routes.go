@@ -23,6 +23,10 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/bills", services.GetAllBills)
 	app.Get("/bills/:tenant_username", services.GetBillsByTenantUsername)
 	app.Get("/bills/:bill_id/items", services.GetBillItemsByBillID)
+	app.Post("/bills/create", services.CreateBill)
+
+	// Route สำหรับการสร้าง BillItem
+	app.Post("/bill-items/create", services.CreateBillItem)
 	app.Get("/transactions/:bill_id", services.GetTransactionsByBillID)
 	app.Post("/transactions", services.CreateTransaction)
 	app.Put("/transactions/:transaction_id/status/:status", services.UpdateTransactionStatus)
@@ -37,7 +41,9 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/reservations/tenant/:tenant_username", services.GetReservationsByUsername)
 
 	// Route สำหรับการอัปเดตสถานะของการจอง
-	app.Put("/reservations/:reservation_id/status", services.UpdateReservationStatus)
+	app.Put("/reservations/status", services.UpdateReservationStatus)
 
 	app.Get("/reservations/:reservation_id", services.GetReservationByID) // เพิ่มเส้นทางนี้
+
+	app.Put("/reservation/details", services.UpdateReservationDetails)
 }

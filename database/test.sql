@@ -11,5 +11,8 @@ VALUES
     ('employee3','cashier'),
     ('employee3','manager');
 
+SELECT  reservation_id
+FROM reservation
+
 
 

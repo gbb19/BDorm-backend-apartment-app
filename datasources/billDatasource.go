@@ -103,21 +103,7 @@ func GetAllBills() ([]entities.Bill, error) {
 	return bills, nil
 }
 
-func UpdateTransactionStatus(transactionID int, status int) error {
-	// สร้างคำสั่ง SQL สำหรับอัปเดตสถานะของ transaction
-	query := `UPDATE transaction SET transaction_status = ? WHERE transaction_id = ?`
-
-	// เตรียม statement และ execute กับฐานข้อมูล
-	_, err := config.DB.Exec(query, status, transactionID)
-	if err != nil {
-		log.Println("Error updating transaction status:", err)
-		return err
-	}
-
-	return nil
-}
-
-func UpdateBillStatus(billID string, status string) error {
+func UpdateBillStatus(billID int, status string) error {
 	// สร้างคำสั่ง SQL เพื่ออัปเดตสถานะของใบแจ้งหนี้
 	query := `UPDATE bill SET bill_status = ? WHERE bill_id = ?`
 
@@ -129,4 +115,28 @@ func UpdateBillStatus(billID string, status string) error {
 	}
 
 	return nil
+}
+
+
+func CreateBill(bill entities.BillCreate) (int, error) {
+	// คำสั่ง SQL สำหรับการแทรกข้อมูลในตาราง bill
+	query := `INSERT INTO bill (payment_term, tenant_username, cashier_username)
+	          VALUES (?, ?, ?)`
+
+	// Execute คำสั่ง SQL
+	result, err := config.DB.Exec(query, bill.PaymentTerm, bill.TenantUsername, bill.CashierUsername)
+	if err != nil {
+		log.Println("Error inserting into bill:", err)
+		return 0, err
+	}
+
+	// ดึง bill_id ที่ถูกสร้างขึ้นจากการ insert
+	billID, err := result.LastInsertId()
+	if err != nil {
+		log.Println("Error fetching LastInsertId for bill:", err)
+		return 0, err
+	}
+
+	// คืนค่า bill_id ที่ถูกสร้างขึ้น
+	return int(billID), nil
 }

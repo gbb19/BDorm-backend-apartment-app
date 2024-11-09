@@ -22,3 +22,9 @@ type UpdateReservationStatus struct {
 	ReservationID     int `json:"reservation_id"`
 	ReservationStatus int `json:"reservation_status"`
 }
+
+type UpdateReservationDetails struct {
+	ReservationID   int    `json:"reservation_id"`
+	BillID          int    `json:"bill_id"`
+	ManagerUsername string `json:"manager_username"`
+}

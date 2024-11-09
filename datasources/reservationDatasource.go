@@ -1,6 +1,7 @@
 package datasources
 
 import (
+	"fmt"
 	"log"
 	"onez19/config"
 	"onez19/entities"
@@ -61,17 +62,30 @@ func GetReservationsByUsername(tenantUsername string) ([]entities.Reservation, e
 }
 
 func UpdateReservationStatus(reservationID int, reservationStatus int) error {
-	// คำสั่ง SQL สำหรับการอัปเดตสถานะของการจอง
+	// SQL Query สำหรับอัปเดตสถานะของการจอง
 	query := `UPDATE reservation SET reservation_status = ? WHERE reservation_id = ?`
 
-	// เตรียมการ query และ execute
-	_, err := config.DB.Exec(query, reservationStatus, reservationID)
+	// Execute คำสั่ง SQL และรับผลลัพธ์
+	result, err := config.DB.Exec(query, reservationStatus, reservationID)
 	if err != nil {
 		log.Println("Error updating reservation status:", err)
 		return err
 	}
 
-	// คืนค่า nil หากการอัปเดตสำเร็จ
+	// ตรวจสอบจำนวนแถวที่ได้รับผลกระทบ
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Println("Error fetching rows affected:", err)
+		return err
+	}
+
+	// ถ้าไม่มีแถวใดได้รับผลกระทบ แสดงว่าข้อมูลอาจไม่ตรงกับ reservationID ที่ระบุ
+	if rowsAffected == 0 {
+		log.Printf("No rows updated. Please check if reservationID %d exists.", reservationID)
+		return fmt.Errorf("No rows updated")
+	}
+
+	log.Printf("Rows affected: %d", rowsAffected)
 	return nil
 }
 
@@ -156,3 +170,60 @@ func GetReservationByID(reservationID int) (*entities.Reservation, error) {
 	return &reservation, nil
 }
 
+func UpdateReservationDetails(reservationID int, billID int, managerUsername string) error {
+	// SQL Query สำหรับการอัปเดต bill_id และ manager_username
+	query := `UPDATE reservation 
+			  SET bill_id = ?, manager_username = ? 
+			  WHERE reservation_id = ?`
+
+	// เตรียมการ query และ execute
+	_, err := config.DB.Exec(query, billID, managerUsername, reservationID)
+	if err != nil {
+		log.Println("Error executing update query:", err)
+		return fmt.Errorf("Failed to update reservation details")
+	}
+
+	// คืนค่า nil หากอัปเดตสำเร็จ
+	return nil
+}
+
+func GetReservationByBillID(billID int) (int, error) {
+	// คำสั่ง SQL เพื่อดึง reservation_id ที่สัมพันธ์กับ bill_id
+	query := `
+		SELECT reservation_id 
+		FROM reservation 
+		WHERE bill_id = ?
+	`
+
+	var reservationID int
+
+	// ใช้คำสั่ง Query เพื่อดึงข้อมูลจากฐานข้อมูล
+	rows, err := config.DB.Query(query, billID)
+	if err != nil {
+		log.Println("Error fetching reservation by bill ID:", err)
+		return 0, err
+	}
+	defer rows.Close()
+
+	// อ่านผลลัพธ์จากฐานข้อมูล
+	if rows.Next() {
+		// สแกนข้อมูล reservation_id
+		if err := rows.Scan(&reservationID); err != nil {
+			log.Println("Error scanning row:", err)
+			return 0, err
+		}
+	} else {
+		// หากไม่พบแถวที่ตรงกับเงื่อนไข
+		log.Printf("No reservation found for bill_id %d", billID)
+		return 0, nil // คืนค่า 0 และ nil หากไม่พบข้อมูล
+	}
+
+	// ตรวจสอบข้อผิดพลาดจากการอ่านแถว
+	if err := rows.Err(); err != nil {
+		log.Println("Error with rows:", err)
+		return 0, err
+	}
+
+	// คืนค่า reservationID ที่พบ
+	return reservationID, nil
+}
