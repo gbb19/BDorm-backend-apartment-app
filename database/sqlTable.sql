@@ -50,11 +50,11 @@ SELECT bill_id, bill_item_number, unit, unit_price
 FROM bill_item
 WHERE bill_id = @bill_id;
 
--- sql-11
-INSERT INTO transaction (file_number, file_path, bill_id)
-VALUES
-    (@file_number, @file_path , @bill_id);
-
+# -- sql-11
+# INSERT INTO transaction (file_number, file_path, bill_id)
+# VALUES
+#     (@file_number, @file_path , @bill_id);
+#
 -- sql-12
 UPDATE bill
 SET bill_status = 1
@@ -199,9 +199,9 @@ FROM contract
 WHERE contract_room_number = @room_number AND contract_status = 0;
 
 -- sql-41
-INSERT INTO contract (contract_number, contract_year, contract_room_number, rental_price, water_rate, electricity_rate, internet_service_fee, username)
+INSERT INTO contract (contract_year, contract_room_number, rental_price, water_rate, electricity_rate, internet_service_fee, username)
 VALUES
-    (@contract_number,@year,@contract_room_number,@rental_price,@water_rate,@electricity_rate,@internet_service_fee,@username);
+    (@year,@contract_room_number,@rental_price,@water_rate,@electricity_rate,@internet_service_fee,@username);
 
 -- sql-42
 UPDATE contract

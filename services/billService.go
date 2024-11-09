@@ -19,14 +19,10 @@ func GetBillsByTenantUsername(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch bills"})
 	}
 
-	// หากไม่พบใบแจ้งหนี้
-	if len(bills) == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "No bills found"})
-	}
-
 	// ส่งข้อมูลใบแจ้งหนี้กลับไปยัง client
-	return c.JSON(fiber.Map{
-		"bills": bills,
+	// ถ้าไม่มีข้อมูล bills, จะส่ง array ว่าง
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"bills": bills, // ถ้าไม่มีข้อมูลจะเป็น [] เลย
 	})
 }
 
@@ -95,5 +91,72 @@ func CreateTransaction(c *fiber.Ctx) error {
 	// คืนค่า transaction_id ที่ถูกสร้างไปยัง client
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"transaction_id": transactionID,
+	})
+}
+
+func GetAllBills(c *fiber.Ctx) error {
+	// ดึงข้อมูลทั้งหมดของบิลจากฐานข้อมูล
+	bills, err := datasources.GetAllBills()
+	if err != nil {
+		log.Println("Error fetching all bills:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch bills"})
+	}
+
+	// ส่งข้อมูลใบแจ้งหนี้กลับไปยัง client
+	// ถ้าไม่มีข้อมูล bills, จะส่ง array ว่าง
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"bills": bills, // ถ้าไม่มีข้อมูลจะเป็น [] เลย
+	})
+}
+
+func UpdateTransactionStatus(c *fiber.Ctx) error {
+	// รับ transaction_id และ status จาก request
+	transactionIDParam := c.Params("transaction_id")
+	statusParam := c.Params("status")
+
+	// แปลง transaction_id และ status เป็น int
+	transactionID, err := strconv.Atoi(transactionIDParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid transaction ID"})
+	}
+
+	status, err := strconv.Atoi(statusParam)
+	if err != nil || (status != 1 && status != 2) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid status value"})
+	}
+
+	// อัปเดตสถานะของ transaction
+	err = datasources.UpdateTransactionStatus(transactionID, status)
+	if err != nil {
+		log.Println("Error updating transaction status:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update transaction status"})
+	}
+
+	// ส่ง response กลับ
+	return c.JSON(fiber.Map{"message": "Transaction status updated successfully"})
+}
+
+func UpdateBillStatus(c *fiber.Ctx) error {
+	// รับ bill_id และ status จาก path parameter
+	billID := c.Params("bill_id")
+	status := c.Params("status")
+
+	// ตรวจสอบ status ว่ามีค่าเป็น 1 (Paid) หรือ 2 (Verified) เท่านั้น
+	if status != "1" && status != "2" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid status. Allowed values are 1 (Paid) or 2 (Verified)",
+		})
+	}
+
+	// เรียกฟังก์ชันใน datasource เพื่ออัปเดตสถานะของใบแจ้งหนี้
+	err := datasources.UpdateBillStatus(billID, status)
+	if err != nil {
+		log.Println("Error updating bill status:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update bill status"})
+	}
+
+	// ส่งการตอบกลับว่าอัปเดตสำเร็จ
+	return c.JSON(fiber.Map{
+		"message": "Bill status updated successfully",
 	})
 }

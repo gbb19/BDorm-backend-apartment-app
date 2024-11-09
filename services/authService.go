@@ -9,17 +9,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func GetUsers(c *fiber.Ctx) error {
-	// ดึงข้อมูลผู้ใช้ทั้งหมดจาก userService
-	users, err := datasources.GetAllUsers()
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch users"})
-	}
-
-	// ส่งข้อมูลผู้ใช้กลับไปยัง client
-	return c.JSON(users)
-}
-
 func Register(ctx *fiber.Ctx) error {
 	var user entities.User
 
