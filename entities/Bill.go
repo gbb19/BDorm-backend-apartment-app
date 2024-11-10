@@ -5,6 +5,7 @@ type Bill struct {
 	PaymentTerm    int    `json:"payment_term"`
 	CreateDateTime string `json:"create_date_time"`
 	BillStatus     int    `json:"bill_status"`
+	TenantUsername string `json:"tenant_username"` // ชื่อผู้เช่า
 }
 
 type BillCreate struct {

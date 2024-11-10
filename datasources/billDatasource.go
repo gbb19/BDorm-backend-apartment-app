@@ -60,7 +60,7 @@ func GetAllBills() ([]entities.Bill, error) {
 	var bills []entities.Bill
 
 	// คำสั่ง SQL เพื่อดึงข้อมูลทั้งหมดจากตาราง bill โดยเรียงลำดับจาก create_date_time ในแบบ DESC
-	query := `SELECT bill_id, payment_term, create_date_time, bill_status 
+	query := `SELECT bill_id, payment_term, create_date_time, bill_status,tenant_username
 	          FROM bill 
 	          ORDER BY create_date_time DESC`
 
@@ -76,7 +76,7 @@ func GetAllBills() ([]entities.Bill, error) {
 	for rows.Next() {
 		var bill entities.Bill
 		var createDateTime []byte // ใช้ []byte ชั่วคราวเพื่อแปลงเป็น time.Time
-		if err := rows.Scan(&bill.BillID, &bill.PaymentTerm, &createDateTime, &bill.BillStatus); err != nil {
+		if err := rows.Scan(&bill.BillID, &bill.PaymentTerm, &createDateTime, &bill.BillStatus, &bill.TenantUsername); err != nil {
 			log.Println("Error scanning row:", err)
 			return nil, err
 		}
@@ -116,7 +116,6 @@ func UpdateBillStatus(billID int, status string) error {
 
 	return nil
 }
-
 
 func CreateBill(bill entities.BillCreate) (int, error) {
 	// คำสั่ง SQL สำหรับการแทรกข้อมูลในตาราง bill

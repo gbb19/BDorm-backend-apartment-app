@@ -26,3 +26,11 @@ type ContractCreate struct {
 	InternetServiceFee float64 `json:"internet_service_fee"`
 	Username           string  `json:"username"`
 }
+
+type ContractLedger struct {
+	RentalPrice        float64 `json:"rental_price"`
+	WaterRate          float64 `json:"water_rate"`
+	ElectricityRate    float64 `json:"electricity_rate"`
+	InternetServiceFee float64 `json:"internet_service_fee"`
+	Username           string  `json:"username"`
+}

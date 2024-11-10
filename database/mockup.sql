@@ -57,13 +57,12 @@ VALUES (1, 1, 'b1', 100, 1.5),
 
 -- Insert mockup data for Ledger
 INSERT INTO ledger (ledger_month, ledger_year, username)
-VALUES (7, 2024, 'employee1'),
-       (8, 2024, 'employee2');
+VALUES (10, 2024, 'employee1');
 
 -- Insert mockup data for Ledger_Item
 INSERT INTO ledger_item (ledger_item_room_number, ledger_month, ledger_year, water_unit, electricity_unit,
                          ledger_item_status)
-VALUES (101, 7, 2024, 15, 25, 1),
-       (102, 7, 2024, 20, 30, 1),
-       (101, 8, 2024, 18, 28, 0),
-       (102, 8, 2024, 17, 26, 0);
+VALUES (101, 10, 2024, 15, 25, 1),
+       (102, 10, 2024, 20, 30, 1),
+       (103, 10, 2024, 20, 30, 0),
+       (104, 10, 2024, 20, 30, 0);

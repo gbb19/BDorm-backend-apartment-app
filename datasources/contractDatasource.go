@@ -1,6 +1,7 @@
 package datasources
 
 import (
+	"database/sql"
 	"log"
 	"onez19/config"
 	"onez19/entities"
@@ -172,4 +173,33 @@ func CreateContract(contractYear, contractRoomNumber int, rentalPrice, waterRate
 	}
 
 	return nil
+}
+
+func GetContractDetailsLedger(contractRoomNumber int) (*entities.ContractLedger, error) {
+	query := `
+		SELECT rental_price,internet_service_fee, water_rate, electricity_rate, username
+		FROM contract
+		WHERE contract_room_number = ? AND contract_status = 0
+	`
+
+	var contract entities.ContractLedger
+
+	err := config.DB.QueryRow(query, contractRoomNumber).Scan(
+		&contract.RentalPrice,
+		&contract.InternetServiceFee,
+		&contract.WaterRate,
+		&contract.ElectricityRate,
+		&contract.Username,
+	)
+	if err == sql.ErrNoRows {
+		// หากไม่พบข้อมูลสำหรับสัญญานี้
+		log.Println("No active contract found for room:", contractRoomNumber)
+		return nil, nil
+	} else if err != nil {
+		// หากเกิดข้อผิดพลาดในการ query
+		log.Println("Error fetching contract details:", err)
+		return nil, err
+	}
+
+	return &contract, nil
 }

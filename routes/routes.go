@@ -15,10 +15,11 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/users", services.GetUsers)
 	app.Get("/users/tenant", services.GetUsersWithTenant)
 	app.Get("/contracts", services.GetAllContracts)
+	app.Get("/contracts/check-active/:contract_room_number", services.CheckContractActive)
 	app.Get("/contracts/:username", services.GetAllContractsByUsername)
 	app.Get("/contracts/:contract_number/:contract_year", services.GetContractDetails)
 	app.Put("/contracts/:contract_room_number/:status", services.UpdateContractStatus)
-	app.Get("/contracts/check-active/:contract_room_number", services.CheckContractActive)
+
 	app.Post("/contracts/create", services.CreateContract)
 	app.Get("/bills", services.GetAllBills)
 	app.Get("/bills/:tenant_username", services.GetBillsByTenantUsername)
@@ -46,4 +47,13 @@ func SetupRoutes(app *fiber.App) {
 	app.Get("/reservations/:reservation_id", services.GetReservationByID) // เพิ่มเส้นทางนี้
 
 	app.Put("/reservation/details", services.UpdateReservationDetails)
+
+	app.Post("/ledgers/create", services.CreateLedger)
+	app.Post("/ledger-items/create", services.CreateLedgerItem)
+
+	app.Put("/ledger-items/update", services.UpdateLedgerItem)
+	app.Put("/ledger-items/status/update", services.UpdateLedgerItemStatus)
+
+	app.Get("/ledger-items/:month/:year", services.GetLedgerItemsByMonthAndYear)
+
 }

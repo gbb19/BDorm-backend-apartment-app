@@ -310,7 +310,7 @@ FROM user
 WHERE username = @username;
 
 -- sql-54
-SELECT ledger_month, ledger_year, ledger_item_room_number,water_unit,electricity_unit
+SELECT ledger_month, ledger_year, ledger_item_room_number,water_unit,electricity_unit,ledger_item_status
 FROM ledger_item
 WHERE ledger_month = @month AND ledger_year = @year AND ledger_item_room_number = @room_number;
 

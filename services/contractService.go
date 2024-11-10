@@ -125,9 +125,9 @@ func CheckContractActive(c *fiber.Ctx) error {
 	// แปลง contract_room_number จาก string เป็น int
 	contractRoomNumber, err := strconv.Atoi(contractRoomNumberStr)
 	if err != nil {
-		log.Println("Invalid contract room number:", err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid contract room number",
+		log.Println("Error checking contract status:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to check contract status",
 		})
 	}
 
