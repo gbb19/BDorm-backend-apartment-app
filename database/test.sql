@@ -17,8 +17,12 @@ WHERE contract_room_number = 101
   AND contract_status = 0;
 
 
-SELECT internet_service_fee,water_rate,electricity_rate,username
+SELECT internet_service_fee, water_rate, electricity_rate, username
 FROM contract
 WHERE contract_room_number = 104
-  AND contract_status = 0
+  AND contract_status = 0;
+
+UPDATE transaction
+SET transaction_status = 1, username = 'employee2'
+WHERE transaction_id = 25;
 

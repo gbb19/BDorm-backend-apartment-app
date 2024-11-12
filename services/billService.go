@@ -111,9 +111,10 @@ func GetAllBills(c *fiber.Ctx) error {
 }
 
 func UpdateTransactionStatus(c *fiber.Ctx) error {
-	// รับ transaction_id และ status จาก request
+	// รับ transaction_id, status, และ username จาก request params
 	transactionIDParam := c.Params("transaction_id")
 	statusParam := c.Params("status")
+	username := c.Params("username") // ดึง username จาก params
 
 	// แปลง transaction_id และ status เป็น int
 	transactionID, err := strconv.Atoi(transactionIDParam)
@@ -126,8 +127,13 @@ func UpdateTransactionStatus(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid status value"})
 	}
 
-	// อัปเดตสถานะของ transaction
-	err = datasources.UpdateTransactionStatus(transactionID, status)
+	// ตรวจสอบว่า username มีค่าหรือไม่
+	if username == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Username is required"})
+	}
+
+	// อัปเดตสถานะของ transaction และ username
+	err = datasources.UpdateTransactionStatus(transactionID, status, username)
 	if err != nil {
 		log.Println("Error updating transaction status:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update transaction status"})
@@ -199,7 +205,6 @@ func UpdateBillStatus(c *fiber.Ctx) error {
 		"message": "Bill and reservation statuses updated successfully",
 	})
 }
-
 
 func CreateBill(c *fiber.Ctx) error {
 	// รับข้อมูลจาก request body

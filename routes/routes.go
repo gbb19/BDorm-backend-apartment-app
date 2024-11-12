@@ -30,7 +30,7 @@ func SetupRoutes(app *fiber.App) {
 	app.Post("/bill-items/create", services.CreateBillItem)
 	app.Get("/transactions/:bill_id", services.GetTransactionsByBillID)
 	app.Post("/transactions", services.CreateTransaction)
-	app.Put("/transactions/:transaction_id/status/:status", services.UpdateTransactionStatus)
+	app.Put("/transactions/:transaction_id/status/:status/username/:username", services.UpdateTransactionStatus)
 	app.Put("/bills/:bill_id/status/:status", services.UpdateBillStatus)
 	// Route สำหรับการสร้างการจอง
 	app.Post("/reservations/create", services.CreateReservation)

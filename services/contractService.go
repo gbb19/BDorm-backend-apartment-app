@@ -19,14 +19,10 @@ func GetAllContractsByUsername(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contracts"})
 	}
 
-	// หากไม่มีสัญญา active
-	if contracts == nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "No active contracts found"})
-	}
-
 	// ส่งข้อมูลสัญญากลับไปยัง client
-	return c.JSON(fiber.Map{
-		"contracts": contracts,
+	// ถ้าไม่มีข้อมูล contracts, จะส่ง array ว่าง
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"contracts": contracts, // ถ้าไม่มีข้อมูลจะเป็น [] เลย
 	})
 }
 
@@ -38,17 +34,12 @@ func GetAllContracts(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch contracts"})
 	}
 
-	// หากไม่มีสัญญา active
-	if len(contracts) == 0 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "No active contracts found"})
-	}
-
 	// ส่งข้อมูลสัญญากลับไปยัง client
-	return c.JSON(fiber.Map{
-		"contracts": contracts,
+	// ถ้าไม่มีข้อมูล contracts, จะส่ง array ว่าง
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"contracts": contracts, // ถ้าไม่มีข้อมูลจะเป็น [] เลย
 	})
 }
-
 func GetContractDetails(c *fiber.Ctx) error {
 	// รับค่า contract_number และ contract_year จาก path parameter
 	contractNumber, err := strconv.Atoi(c.Params("contract_number"))
