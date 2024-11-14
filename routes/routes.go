@@ -14,6 +14,8 @@ func SetupRoutes(app *fiber.App) {
 	app.Use(middlewares.AuthRequired)
 	app.Get("/users", services.GetUsers)
 	app.Get("/users/tenant", services.GetUsersWithTenant)
+	app.Get("/users/:username", services.GetUserDetail)
+
 	app.Get("/contracts", services.GetAllContracts)
 	app.Get("/contracts/check-active/:contract_room_number", services.CheckContractActive)
 	app.Get("/contracts/:username", services.GetAllContractsByUsername)

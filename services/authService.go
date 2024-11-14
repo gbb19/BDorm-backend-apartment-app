@@ -16,19 +16,20 @@ func Register(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&user); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
+
 	// ตรวจสอบให้แน่ใจว่ามีข้อมูลครบถ้วน
 	if user.Username == "" || user.Password == "" || user.FirstName == "" || user.LastName == "" {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "All fields are required"})
 	}
 
 	// ตรวจสอบว่า username มีอยู่ในระบบหรือไม่
-	existingUserCount, err := datasources.GetUserByUsername(user.Username)
+	userExists, err := datasources.GetUserByUsername(user.Username)
 	if err != nil {
 		log.Println("Error checking user existence:", err)
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Error checking user existence"})
 	}
 
-	if existingUserCount > 0 {
+	if userExists {
 		// หากมีผู้ใช้ในระบบแล้ว
 		return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "Username already exists"})
 	}

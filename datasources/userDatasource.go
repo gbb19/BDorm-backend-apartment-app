@@ -1,6 +1,7 @@
 package datasources
 
 import (
+	"database/sql"
 	"log"
 	"onez19/config"
 	"onez19/entities"
@@ -36,22 +37,26 @@ func GetAllUsers() ([]entities.UserResponse, error) {
 	return users, nil
 }
 
-func GetUserByUsername(username string) (int, error) {
-	// เตรียมคำสั่ง SQL เพื่อค้นหาจำนวนผู้ใช้ที่มี username ตรงกับที่รับมา
-	query := "SELECT COUNT(*) AS user_count FROM user WHERE username = ?"
+func GetUserByUsername(username string) (bool, error) {
+	// เตรียมคำสั่ง SQL เพื่อค้นหา username ที่ตรงกับที่รับมา
+	query := "SELECT username FROM user WHERE username = ?"
 
-	var userCount int
+	var existingUsername string
 
-	// ใช้คำสั่ง QueryRow เพื่อดึงข้อมูลที่ตรงกับเงื่อนไข
-	err := config.DB.QueryRow(query, username).Scan(&userCount)
+	// ใช้คำสั่ง QueryRow เพื่อดึงข้อมูล username ที่ตรงกับเงื่อนไข
+	err := config.DB.QueryRow(query, username).Scan(&existingUsername)
 	if err != nil {
+		// หากไม่มี username ที่ตรงกันจะคืนค่า false และไม่เกิดข้อผิดพลาดอื่น
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		// หากเกิดข้อผิดพลาดในการ query จะคืนค่าผิดพลาด
-		log.Println("Error fetching user count:", err)
-		return 0, err
+		log.Println("Error fetching username:", err)
+		return false, err
 	}
 
-	// คืนค่าจำนวนผู้ใช้
-	return userCount, nil
+	// หากพบ username ตรงกัน จะคืนค่า true
+	return true, nil
 }
 
 func InsertUser(user entities.User) (bool, error) {
@@ -111,3 +116,26 @@ func LoginUser(user entities.User) (entities.UserResponse, error) {
 	// ส่งคืนข้อมูลทั้งหมด
 	return response, nil
 }
+
+func GetUserDetails(username string) (*entities.User, error) {
+	// เตรียมคำสั่ง SQL เพื่อดึงรายละเอียดผู้ใช้ที่ตรงกับ username ที่รับมา
+	query := "SELECT username, first_name, last_name FROM user WHERE username = ?"
+
+	var user entities.User
+
+	// ใช้คำสั่ง QueryRow เพื่อดึงข้อมูลรายละเอียดของผู้ใช้
+	err := config.DB.QueryRow(query, username).Scan(&user.Username, &user.FirstName, &user.LastName)
+	if err != nil {
+		// หากไม่มีข้อมูลผู้ใช้ที่ตรงกัน จะคืนค่า nil และไม่เกิดข้อผิดพลาดอื่น
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		// หากเกิดข้อผิดพลาดในการ query จะคืนค่าผิดพลาด
+		log.Println("Error fetching user details:", err)
+		return nil, err
+	}
+
+	// คืนค่ารายละเอียดของผู้ใช้
+	return &user, nil
+}
+
