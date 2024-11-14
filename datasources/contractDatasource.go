@@ -193,7 +193,6 @@ func GetContractDetailsLedger(contractRoomNumber int) (*entities.ContractLedger,
 	)
 	if err == sql.ErrNoRows {
 		// หากไม่พบข้อมูลสำหรับสัญญานี้
-		log.Println("No active contract found for room:", contractRoomNumber)
 		return nil, nil
 	} else if err != nil {
 		// หากเกิดข้อผิดพลาดในการ query
